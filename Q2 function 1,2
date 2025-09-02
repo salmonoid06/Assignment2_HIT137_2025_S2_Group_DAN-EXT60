@@ -1,0 +1,84 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# ### Question 2 
+
+# In[5]:
+
+
+import pandas as pd
+import glob
+import os
+
+BASE_PATH = r"C:\Downloads\HIT137_Assignment 2\temperatures"
+
+def load_all_data():
+    """Load and combine all CSVs in the folder into one DataFrame."""
+    files = glob.glob(os.path.join(BASE_PATH, "*.csv"))
+    if not files:
+        raise FileNotFoundError(f"No CSV files found in {BASE_PATH}")
+
+    dfs = []
+    for f in files:
+        try:
+            df = pd.read_csv(f)
+            dfs.append(df)
+        except Exception as e:
+            print(f"Error reading {f}: {e}")
+
+    if not dfs:
+        raise ValueError("No valid CSVs loaded.")
+
+    return pd.concat(dfs, ignore_index=True)
+
+def seasonal_average(df):
+    """Calculate average seasonal temperatures across all stations and years."""
+    seasons = {
+        "Summer": ["December", "January", "February"],
+        "Autumn": ["March", "April", "May"],
+        "Winter": ["June", "July", "August"],
+        "Spring": ["September", "October", "November"],
+    }
+
+    results = {}
+    for season, months in seasons.items():
+        values = df[months].values.flatten()
+        avg = pd.Series(values).dropna().mean()
+        results[season] = round(avg, 1)
+
+    with open("average_temp.txt", "w") as f:
+        for season, avg in results.items():
+            f.write(f"{season}: {avg}°C\n")
+
+def largest_temp_range(df):
+    """Find station(s) with largest temperature range (max - min)."""
+    station_ranges = []
+
+    for stn, group in df.groupby("STATION_NAME"):
+        temps = group.loc[:, "January":"December"].values.flatten()
+        temps = pd.Series(temps).dropna()
+        if temps.empty:
+            continue
+        tmax, tmin = temps.max(), temps.min()
+        trange = tmax - tmin
+        station_ranges.append((stn, trange, tmax, tmin))
+
+    if not station_ranges:
+        return
+
+    max_range = max(station_ranges, key=lambda x: x[1])[1]
+    winners = [s for s in station_ranges if abs(s[1] - max_range) < 1e-6]
+
+    with open("largest_temp_range_station.txt", "w") as f:
+        for stn, trange, tmax, tmin in winners:
+            f.write(f"{stn}: Range {trange:.1f}°C (Max: {tmax:.1f}°C, Min: {tmin:.1f}°C)\n")
+
+def main():
+    df = load_all_data()
+    seasonal_average(df)
+    largest_temp_range(df)
+    print("✅ Results saved to 'average_temp.txt' and 'largest_temp_range_station.txt'")
+
+if __name__ == "__main__":
+    main()
+
