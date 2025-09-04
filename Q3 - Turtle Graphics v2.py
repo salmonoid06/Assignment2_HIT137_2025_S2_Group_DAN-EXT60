@@ -7,7 +7,6 @@ length = int(input("Enter the side length:"))
 depth = int(input("Enter the recursion depth:"))
 # Instantiate turtle
 screen = trl.Screen()
-#screen.setup(width=2*length, height=2*length, startx=50, starty=50)
 t = trl.Turtle()
 # Compute data needed to draw in 2 matricies
 angle = float(180-(((sides-2)*180)/sides)) # Angle for turns(interior angle of given polygon)
