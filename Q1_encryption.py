@@ -39,7 +39,7 @@ def encrypt_file(shift1: int, shift2: int):
         encrypted_chars.append(new_ch)
         meta_chars.append(tag)
 
-    # Saves encrypted text and metadata to separate files
+    # Saves the encrypted text and metadata to separate files
     with open("encrypted_text.txt", "w") as f:
         f.write("".join(encrypted_chars))
 
@@ -107,4 +107,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()
